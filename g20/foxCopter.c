@@ -7,7 +7,7 @@
 
 #include "imu/fc_i2c.h"
 #include "imu/lis331dlh.h"
-
+#include <unistd.h>
 
 int lis331_init(int fd) {
 	// select device
@@ -35,6 +35,7 @@ int lis331_readall(int fd, lis331dlh_output *data) {
 	buffH = i2c_read_byte(fd, LIS331DLH_OUT_Z_H);
 	buffL = i2c_read_byte(fd, LIS331DLH_OUT_Z_L);
 	data->raw_z = lis_compact_bytes(buffH, buffL);
+	printf("0x%2X - 0x%2X =>0x%2X => %d                           \r",buffH,buffL,data->raw_z,data->raw_z);
 	return(0);
 }
 
@@ -49,8 +50,8 @@ int main(int argc, char *argv[]) {
 		lis331_init(fd);
 		while(1) {
 			lis331_readall(fd, &lis_data);
-			printf("Xraw: %6d\tYraw: %6d\tZraw: %6d\r",lis_data.raw_x,lis_data.raw_y,lis_data.raw_z);
-
+//			printf("Xraw: %6d\tYraw: %6d\tZraw: %6d\r",lis_data.raw_x,lis_data.raw_y,lis_data.raw_z);
+			usleep(20000);
 		}
 	}
 	return(0);
