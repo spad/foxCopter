@@ -6,6 +6,8 @@
  */
 
 #include "fc_i2c.h"
+#include <fcntl.h>
+
 
 int i2c_open(int device) {
 	int fd;
