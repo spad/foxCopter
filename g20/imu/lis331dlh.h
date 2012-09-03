@@ -52,13 +52,13 @@
 // CTRL_REG4
 																// FS0	FS1 (bit 00xx0000 in REG4)
 #define LIS331DLH_FS_2G				(unsigned char) 0x00		//   0    0 = +- 2g
-#define LIS331DLH_FS_4G				(unsigned char) 0x08		//   0    1 = +- 4g
+#define LIS331DLH_FS_4G				(unsigned char) 0x10		//   0    1 = +- 4g
 #define LIS331DLH_FS_8G				(unsigned char) 0x30		//   1    1 = +- 8g
 // COMMON MODES
 #define LIS331DLH_NOR_400_XYZ		(unsigned char) LIS331DLH_PM_NORMAL|LIS331DLH_DR_400|LIS331DLH_XYZ_EN // normal power, 400Hz, all axis enabled
 
 // MACROS
-#define lis_compact_bytes(x,y)		(signed short) (x<<8)|y
+#define lis_compact_bytes(x,y)		(unsigned short) (x << 8) | y
 
 // Datatypes
 typedef struct {
@@ -66,7 +66,6 @@ typedef struct {
 	signed short raw_y;	// raw data for y-accel
 	signed short raw_z;	// raw data for z-accel
 } lis331dlh_output;
-
 
 
 #endif /* LIS331DLH_H_ */
