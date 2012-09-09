@@ -5,8 +5,12 @@
  *      Author: saverio
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
 #include "fc_i2c.h"
-//#include <fcntl.h>
+#include <unistd.h>
 
 
 int i2c_open(int device) {

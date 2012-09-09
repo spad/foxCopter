@@ -7,38 +7,10 @@
 
 #include <unistd.h>
 #include "imu/fc_i2c.h"
-#include "imu/lis331dlh.h"
+#include "imu/daisy7.h"
 #include "gcs/gcs.h"
 #include "mavlink/common/mavlink.h"
 
-int lis331_init(int fd) {
-	// select device
-	i2c_opendevice(fd,LIS331DLH_ADDR);
-	// setting REG1: power_normal, 400Hz, xyz enabled
-	i2c_write_byte(fd, LIS331DLH_CTRL_REG1, LIS331DLH_NOR_400_XYZ);
-	// setting scale: 2g (not needed)
-	i2c_write_byte(fd, LIS331DLH_CTRL_REG4, LIS331DLH_FS_8G);
-	return(0);
-}
-
-int lis331_readall(int fd, lis331dlh_output *data) {
-	unsigned char buffH=0x00, buffL=0x00;
-	// select device
-	i2c_opendevice(fd,LIS331DLH_ADDR);
-	// x axis
-	buffH = i2c_read_byte(fd, LIS331DLH_OUT_X_H);
-	buffL = i2c_read_byte(fd, LIS331DLH_OUT_X_L);
-	data->raw_x = lis_compact_bytes(buffH, buffL);
-	// y axis
-	buffH = i2c_read_byte(fd, LIS331DLH_OUT_Y_H);
-	buffL = i2c_read_byte(fd, LIS331DLH_OUT_Y_L);
-	data->raw_y = lis_compact_bytes(buffH, buffL);
-	// z axis
-	buffH = i2c_read_byte(fd, LIS331DLH_OUT_Z_H);
-	buffL = i2c_read_byte(fd, LIS331DLH_OUT_Z_L);
-	data->raw_z = lis_compact_bytes(buffH, buffL);
-	return(0);
-}
 /**
  * send a heartbeat message.
  */
@@ -66,13 +38,16 @@ uint64_t microsSinceEpoch(){
 	return micros;
 }
 
-int gcs_raw_imu(int sock, lis331dlh_output *data) {
+int gcs_raw_imu(int sock, daisy7_imu data) {
 	int bytes_sent;
 	mavlink_message_t msg;
 	uint8_t buf[512];
 	uint16_t len;
 
-	mavlink_msg_raw_imu_pack(1, 200, &msg, microsSinceEpoch(),(int16_t)data->raw_x,(int16_t) data->raw_y,(int16_t) data->raw_z,0,0,0,0,0,0);
+	mavlink_msg_raw_imu_pack(1, 200, &msg, microsSinceEpoch(),
+			data.acc.raw_x, data.acc.raw_y, data.acc.raw_z,
+			data.gyro.raw_x,data.gyro.raw_y,data.gyro.raw_z,
+			0,0,0);
 	len = mavlink_msg_to_send_buffer(buf, &msg);
 	bytes_sent = gcs_udp_send(sock, buf, len);
 	return(bytes_sent);
@@ -82,25 +57,25 @@ int gcs_raw_imu(int sock, lis331dlh_output *data) {
 int main(int argc, char *argv[]) {
 	int fd;
 	int sock;
-
+	daisy7_imu imu_data;
 
 	sock = gcs_udp_open();
-	if (sock==0) return(-1);
-	printf("Socket opened %d\n",sock);
-	lis331dlh_output lis_data;
-	printf("Starting...\n");
+	if (sock==0) return(1);
+
+	printf("Starting...sock %X\n", sock);
 	// init i2c
 	fd = i2c_open(I2C_G20_DEVICE);
 	if (!(fd<0)) {
-		// i2c opened. Init lis331
-		lis331_init(fd);
+		// i2c opened. Init daisy7
+		daisy7_init(fd);
 		while(1) {
-			lis331_readall(fd, &lis_data);
+			daisy7_readall(fd, &imu_data);
 			gcs_heartbeat(sock);
-
-			printf("Xraw: %6d\tYraw: %6d\tZraw: %6d --- mav bytes sent: %d\r",lis_data.raw_x,lis_data.raw_y,lis_data.raw_z,
-						gcs_raw_imu(sock,&lis_data));
-			usleep(20000);
+			gcs_raw_imu(sock,imu_data);
+//			printf("acc(%5d - %5d - %5d) gyro(%5d - %5d - %5d)     \r",
+//					imu_data.acc.raw_x,imu_data.acc.raw_y,imu_data.acc.raw_z,
+//					imu_data.gyro.raw_x,imu_data.gyro.raw_y,imu_data.gyro.raw_z);
+			usleep(2500);
 		}
 	}
 	gcs_udp_close(sock);

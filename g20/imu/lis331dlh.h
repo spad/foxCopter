@@ -57,8 +57,6 @@
 // COMMON MODES
 #define LIS331DLH_NOR_400_XYZ		(unsigned char) LIS331DLH_PM_NORMAL|LIS331DLH_DR_400|LIS331DLH_XYZ_EN // normal power, 400Hz, all axis enabled
 
-// MACROS
-#define lis_compact_bytes(x,y)		(unsigned short) (x << 8) | y
 
 // Datatypes
 typedef struct {

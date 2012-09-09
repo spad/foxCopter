@@ -20,18 +20,19 @@ int gcs_udp_open(void) {
 		return 0;
 	}
 
-	memset(&locAddr, 0, sizeof(locAddr));
-	locAddr.sin_family = AF_INET;
-	locAddr.sin_addr.s_addr = INADDR_ANY;
-	locAddr.sin_port = htons(GCS_LOC_PORT);
+//	memset(&locAddr, 0, sizeof(locAddr));
+
+//	locAddr.sin_family = AF_INET;
+//	locAddr.sin_addr.s_addr = INADDR_ANY;
+//	locAddr.sin_port = htons(GCS_LOC_PORT);
 
 	/* Bind the socket to port 14551 - necessary to receive packets from qgroundcontrol */
-	if (-1 == bind(sock,(struct sockaddr *)&locAddr, sizeof(struct sockaddr)))
-    {
-		perror("error bind failed. [udp_open()]");
-		close(sock);
-		exit(EXIT_FAILURE);
-    }
+//	if (-1 == bind(sock,(struct sockaddr *)&locAddr, sizeof(struct sockaddr)))
+//    {
+//		perror("error bind failed. [udp_open()]");
+//		close(sock);
+//		exit(EXIT_FAILURE);
+//    }
 
 	/* Attempt to make it non blocking */
 	if (fcntl(sock, F_SETFL, O_NONBLOCK | FASYNC) < 0)

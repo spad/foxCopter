@@ -23,7 +23,7 @@
 #include <arpa/inet.h>
 
 
-#define GCS_GC_IP	 	"10.0.1.155"	// ground control default addr
+#define GCS_GC_IP	 	"10.0.2.159"	// ground control default addr
 #define GCS_GC_PORT 	14550			// UDP port of ground control
 #define GCS_LOC_PORT	14551			// local port for receiving messages
 
